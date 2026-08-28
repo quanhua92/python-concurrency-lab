@@ -5,7 +5,7 @@ from pyconlab.jobs import MatMulJob, MatMulResult
 
 def matrix_value(seed: int, row: int, col: int) -> int:
     """Return a deterministic small integer without using a RNG."""
-    return (seed * (row + 1) * (col + 1)) % 10
+    return ((seed + row + 1) * (col + 1)) % 10
 
 
 def make_matrix(size: int, seed: int) -> list[list[int]]:

@@ -9,6 +9,9 @@ authors = [
 requires-python = ">=3.14"
 dependencies = []
 
+[project.scripts]
+pyconlab = "pyconlab.cli:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
