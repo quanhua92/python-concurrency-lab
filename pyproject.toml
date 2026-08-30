@@ -17,6 +17,9 @@ dependencies = [
 pyconlab = "pyconlab.cli:main"
 async_server = "pyconlab.async_server:main"
 runtime_status = "pyconlab.runtime_status:main"
+metrics_race = "pyconlab.metrics_race:main"
+race_stress = "pyconlab.race_stress:main"
+
 
 [build-system]
 requires = ["hatchling"]
