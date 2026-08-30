@@ -64,15 +64,42 @@ The following results were collected with the script’s defaults (`jobs=16`,
 | 3.14.5 standard | single | true | 2534702284800 | 0.748s |
 | 3.14.5 standard | threads | true | 2534702284800 | 0.759s |
 | 3.14.5 standard | processes | true | 2534702284800 | 0.255s |
-| 3.14.5 standard | interpreters | true | 0 | 0.000s |
+| 3.14.5 standard | interpreters | true | 2534702284800 | 0.222s |
 | 3.14.7 free-threaded | single | false | 2534702284800 | 0.849s |
 | 3.14.7 free-threaded | threads | false | 2534702284800 | 0.216s |
 | 3.14.7 free-threaded | processes | false | 2534702284800 | 0.295s |
-| 3.14.7 free-threaded | interpreters | false | 0 | 0.000s |
+| 3.14.7 free-threaded | interpreters | false | 2534702284800 | 0.342s |
 
-The single, thread, and process modes produce matching checksums across both
-builds. The `interpreters` mode currently returns no results and is therefore
-reported with a zero checksum.
+The single, thread, process, and interpreter modes produce matching checksums
+across both builds.
+
+## Phase 4: subinterpreters
+
+The `interpreters` mode uses `InterpreterPoolExecutor` to run the existing
+`run_jobs()` matmul code in separate interpreter workers within one OS process:
+
+```console
+uv run --python 3.14 pyconlab --mode interpreters --workers 4
+uv run --python /opt/homebrew/bin/python3.14t pyconlab --mode interpreters --workers 4
+```
+
+The boundary demo compares sending a tiny summary with sending the full result
+matrix across an interpreter boundary:
+
+```console
+uv run --python 3.14 interpreter_boundary
+uv run --python /opt/homebrew/bin/python3.14t interpreter_boundary
+```
+
+Observed results for a 128x128 matrix and 20 crossings:
+
+| Python build | Summary crossing | Full-matrix crossing | Full/summary |
+| --- | ---: | ---: | ---: |
+| 3.14.5 standard | 0.0143s | 0.0297s | 2.1x |
+| 3.14.7 free-threaded | 0.0106s | 0.0167s | 1.6x |
+
+The full matrix costs more to cross than the tiny summary, illustrating the
+tradeoff between subinterpreter isolation and data-transfer overhead.
 
 ## Phase 3: shared-state experiments
 
