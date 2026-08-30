@@ -74,6 +74,56 @@ The single, thread, and process modes produce matching checksums across both
 builds. The `interpreters` mode currently returns no results and is therefore
 reported with a zero checksum.
 
+## Phase 3: shared-state experiments
+
+The race experiments use the same `Metrics` workload with three strategies:
+
+```console
+uv run --python /opt/homebrew/bin/python3.14t metrics_race --strategy racy
+uv run --python /opt/homebrew/bin/python3.14t metrics_race --strategy locked
+uv run --python /opt/homebrew/bin/python3.14t metrics_race --strategy partials
+```
+
+With the defaults (`threads=8`, `updates=100000`), the free-threaded runtime
+exposed the shared-state race:
+
+```text
+expected=(800000, 800000, 320000400000, 800000)
+observed=(262456, 425427, 159029018777, 800000)
+clean=False
+```
+
+The `locked` and `partials` strategies both produced the expected result:
+
+```text
+observed=(800000, 800000, 320000400000, 800000)
+clean=True
+```
+
+Stress results with 20 trials, 16 threads, and 100000 updates per thread:
+
+| Strategy | Failures |
+| --- | ---: |
+| `racy` | 20 |
+| `locked` | 0 |
+| `partials` | 0 |
+
+Run the stress test with:
+
+```console
+uv run --python /opt/homebrew/bin/python3.14t race_stress --strategy racy --trials 20 --threads 16 --updates 100000
+uv run --python /opt/homebrew/bin/python3.14t race_stress --strategy locked --trials 20
+uv run --python /opt/homebrew/bin/python3.14t race_stress --strategy partials --trials 20
+```
+
+The controlled blocked-thread demo confirms that `faulthandler` captures the
+worker blocked at `lock.acquire()`, after which the main thread releases the
+lock and the program exits normally:
+
+```console
+uv run --python /opt/homebrew/bin/python3.14t race_stress --demo-hang
+```
+
 ## Free-threaded FastAPI compatibility
 
 On macOS, `uv run --python 3.14t` may resolve to an old uv-managed beta such as
