@@ -5,6 +5,7 @@ from .interpreter_runner import run_interpreters
 from .jobs import make_jobs
 from .kernel import summarize
 from .runners import run_processes, run_single, run_threads
+from .runtime_status import build_kind, gil_enabled
 
 
 def main() -> None:
@@ -37,7 +38,8 @@ def main() -> None:
 
     print(
         f"mode={args.mode} jobs={args.jobs} size={args.size} "
-        f"workers={args.workers} seed={args.seed}"
+        f"workers={args.workers} seed={args.seed} "
+        f"build={build_kind()} gil_enabled={gil_enabled()}"
     )
 
     print(
