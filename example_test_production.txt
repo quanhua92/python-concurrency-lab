@@ -1,0 +1,250 @@
+== Ping ==
+{
+  "pong": true,
+  "build": "standard",
+  "gil_enabled": true
+}
+
+== Submit normal job ==
+{
+  "job_id": 47,
+  "status": "queued",
+  "job_count": 8,
+  "size": 128,
+  "seed": 100,
+  "fault": "none",
+  "hang_seconds": 5.0,
+  "result": null,
+  "error": null,
+  "submitted_at": 1788141896.542047,
+  "started_at": null,
+  "finished_at": null,
+  "finished_after_timeout": false
+}
+job_id=47
+
+== Poll normal job ==
+status=running
+status=running
+status=running
+status=done
+{
+  "job_id": 47,
+  "status": "done",
+  "job_count": 8,
+  "size": 128,
+  "seed": 100,
+  "fault": "none",
+  "hang_seconds": 5.0,
+  "result": {
+    "jobs": 8,
+    "checksum_total": 1808144973440,
+    "checksum_min": 226018121680,
+    "checksum_max": 226018121680
+  },
+  "error": null,
+  "submitted_at": 1788141896.542047,
+  "started_at": 1788141896.5422301,
+  "finished_at": 1788141896.997129,
+  "finished_after_timeout": false,
+  "worker_id": 1
+}
+
+== Submit crash job ==
+{
+  "job_id": 48,
+  "status": "queued",
+  "job_count": 1,
+  "size": 64,
+  "seed": 100,
+  "fault": "crash",
+  "hang_seconds": 5.0,
+  "result": null,
+  "error": null,
+  "submitted_at": 1788141897.215328,
+  "started_at": null,
+  "finished_at": null,
+  "finished_after_timeout": false
+}
+{
+  "job_id": 48,
+  "status": "failed",
+  "job_count": 1,
+  "size": 64,
+  "seed": 100,
+  "fault": "crash",
+  "hang_seconds": 5.0,
+  "result": null,
+  "error": "RuntimeError: intentional worker crash",
+  "submitted_at": 1788141897.215328,
+  "started_at": 1788141897.215523,
+  "finished_at": 1788141897.215947,
+  "finished_after_timeout": false,
+  "worker_id": 0
+}
+
+== Submit timeout job ==
+{
+  "job_id": 49,
+  "status": "queued",
+  "job_count": 1,
+  "size": 64,
+  "seed": 100,
+  "fault": "hang",
+  "hang_seconds": 5.0,
+  "result": null,
+  "error": null,
+  "submitted_at": 1788141897.768585,
+  "started_at": null,
+  "finished_at": null,
+  "finished_after_timeout": false
+}
+job_id=49
+
+== Wait until job times out ==
+status=running
+status=running
+status=running
+status=running
+status=running
+status=running
+status=running
+status=running
+status=running
+status=running
+status=timeout
+{
+  "job_id": 49,
+  "status": "timeout",
+  "job_count": 1,
+  "size": 64,
+  "seed": 100,
+  "fault": "hang",
+  "hang_seconds": 5.0,
+  "result": null,
+  "error": "exceeded timeout of 2.00s",
+  "submitted_at": 1788141897.768585,
+  "started_at": 1788141897.768919,
+  "finished_at": 1788141899.770997,
+  "finished_after_timeout": false,
+  "worker_id": 2
+}
+
+== Verify CPU work is still physically running ==
+{
+  "executor": "interpreters",
+  "workers": 4,
+  "queue_size": 8,
+  "queue_depth": 0,
+  "active_cpu": 1,
+  "stuck_slots": 1,
+  "accepted": 31,
+  "rejected": 18,
+  "completed": 25,
+  "failed": 3,
+  "timed_out": 3,
+  "draining": false,
+  "busy_wall_seconds": 15.02,
+  "busy_cpu_seconds": 40.726,
+  "effective_cores": 2.71
+}
+PASS: timed-out CPU work still occupies a slot
+
+== Wait until timed-out CPU work really finishes ==
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=1 active_cpu=1
+stuck_slots=0 active_cpu=0
+PASS: underlying CPU work eventually finished
+
+== Backpressure test ==
+request=01 http=202
+request=02 http=202
+request=03 http=202
+request=04 http=202
+request=05 http=202
+request=06 http=202
+request=07 http=202
+request=08 http=202
+request=09 http=202
+request=10 http=202
+request=11 http=202
+request=12 http=202
+request=13 http=503
+backpressure observed:
+{
+  "detail": "queue is full"
+}
+request=14 http=503
+backpressure observed:
+{
+  "detail": "queue is full"
+}
+request=15 http=503
+backpressure observed:
+{
+  "detail": "queue is full"
+}
+request=16 http=503
+backpressure observed:
+{
+  "detail": "queue is full"
+}
+request=17 http=503
+backpressure observed:
+{
+  "detail": "queue is full"
+}
+request=18 http=503
+backpressure observed:
+{
+  "detail": "queue is full"
+}
+request=19 http=503
+backpressure observed:
+{
+  "detail": "queue is full"
+}
+request=20 http=503
+backpressure observed:
+{
+  "detail": "queue is full"
+}
+
+== Metrics after load ==
+{
+  "executor": "interpreters",
+  "workers": 4,
+  "queue_size": 8,
+  "queue_depth": 8,
+  "active_cpu": 4,
+  "stuck_slots": 0,
+  "accepted": 43,
+  "rejected": 26,
+  "completed": 25,
+  "failed": 3,
+  "timed_out": 3,
+  "draining": false,
+  "busy_wall_seconds": 20.028,
+  "busy_cpu_seconds": 45.75,
+  "effective_cores": 2.28
+}
+
+== Ping after failures/load ==
+{
+  "pong": true,
+  "build": "standard",
+  "gil_enabled": true
+}
+
+== Done ==

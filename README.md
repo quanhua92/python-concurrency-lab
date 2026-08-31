@@ -101,6 +101,40 @@ Observed results for a 128x128 matrix and 20 crossings:
 The full matrix costs more to cross than the tiny summary, illustrating the
 tradeoff between subinterpreter isolation and data-transfer overhead.
 
+## Production-style worker service
+
+`production_server` exposes a bounded asynchronous job queue backed by either
+threads or subinterpreters. Jobs support normal execution, intentional worker
+failure, and timeout testing:
+
+```console
+uv run --python /opt/homebrew/bin/python3.14t production_server \
+  --executor interpreters --workers 4 --queue-size 8 --timeout 2 --port 8124
+```
+
+In another terminal, run the load and failure checks:
+
+```console
+./scripts/test_production.sh
+```
+
+The test verifies `/ping`, successful jobs, worker failures, timeout handling,
+continued CPU work after a timeout, and queue backpressure (`503` when the
+bounded queue is full). The verified free-threaded run reported
+`build=free-threaded`, `gil_enabled=false`, `stuck_slots=1` while timed-out
+work was still running, and `8` rejected requests during the load test.
+
+Verify graceful shutdown separately with:
+
+```console
+./scripts/test_drain.sh
+```
+
+This script starts its own standard-Python server, submits four long-running
+jobs, sends `SIGTERM`, and confirms the server stays alive until the queue is
+drained and logs `draining jobs...` followed by `drain complete`. The scripts
+require `curl` and `jq`.
+
 ## Phase 3: shared-state experiments
 
 The race experiments use the same `Metrics` workload with three strategies:

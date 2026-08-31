@@ -22,6 +22,8 @@ race_stress = "pyconlab.race_stress:main"
 interpreter_boundary = "pyconlab.interpreter_boundary:main"
 profiling = "pyconlab.profiling:main"
 
+production_server = "pyconlab.production_server:main"
+
 
 [build-system]
 requires = ["hatchling"]

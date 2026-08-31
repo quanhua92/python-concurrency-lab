@@ -1,0 +1,94 @@
+== Start server ==
+server_pid=62994
+port=8125
+== Wait for server ==
+server ready
+
+== Verify server configuration ==
+{
+  "executor": "interpreters",
+  "workers": 2,
+  "queue_size": 4,
+  "queue_depth": 0,
+  "active_cpu": 0,
+  "stuck_slots": 0,
+  "accepted": 0,
+  "rejected": 0,
+  "completed": 0,
+  "failed": 0,
+  "timed_out": 0,
+  "draining": false,
+  "busy_wall_seconds": 0.0,
+  "busy_cpu_seconds": 0.0,
+  "effective_cores": 0.0
+}
+PASS: correct test server
+
+== Submit long-running jobs ==
+submitted job_id=1
+submitted job_id=2
+submitted job_id=3
+submitted job_id=4
+
+== State before shutdown ==
+{
+  "executor": "interpreters",
+  "workers": 2,
+  "queue_size": 4,
+  "queue_depth": 2,
+  "active_cpu": 2,
+  "stuck_slots": 0,
+  "accepted": 4,
+  "rejected": 0,
+  "completed": 0,
+  "failed": 0,
+  "timed_out": 0,
+  "draining": false,
+  "busy_wall_seconds": 0.0,
+  "busy_cpu_seconds": 0.0,
+  "effective_cores": 0.0
+}
+
+== Send SIGTERM ==
+== Check server is still alive while draining ==
+PASS: server is still alive and draining
+
+== Wait for graceful exit ==
+still draining...
+still draining...
+still draining...
+still draining...
+still draining...
+still draining...
+still draining...
+still draining...
+still draining...
+still draining...
+still draining...
+PASS: server exited after drain
+
+== Server log ==
+INFO:     Started server process [62998]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8125 (Press CTRL+C to quit)
+executor=interpreters workers=2 queue_size=4 timeout=20.0
+build=standard gil_enabled=True
+INFO:     127.0.0.1:57419 - "GET /ping HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57421 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57423 - "POST /jobs?job_count=1&size=64&fault=hang&hang_seconds=3 HTTP/1.1" 202 Accepted
+INFO:     127.0.0.1:57425 - "POST /jobs?job_count=1&size=64&fault=hang&hang_seconds=3 HTTP/1.1" 202 Accepted
+INFO:     127.0.0.1:57427 - "POST /jobs?job_count=1&size=64&fault=hang&hang_seconds=3 HTTP/1.1" 202 Accepted
+INFO:     127.0.0.1:57429 - "POST /jobs?job_count=1&size=64&fault=hang&hang_seconds=3 HTTP/1.1" 202 Accepted
+INFO:     127.0.0.1:57431 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+draining jobs...
+drain complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [62998]
+
+== Verify drain messages ==
+PASS: graceful drain completed
+
+== Done ==
