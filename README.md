@@ -213,6 +213,49 @@ The working setup is:
 The project currently uses FastAPI 0.141.1, Pydantic 2.13.5,
 Pydantic Core 2.46.5, and Uvicorn 0.52.4.
 
+## Phase 7: Celery and Redis
+
+Phase 7 provides a deliberate alternative to the in-process Phase 6 service.
+Celery handles task scheduling and job state, while Redis acts as both broker
+and result backend. The existing `execute_batch()` workload is reused
+unchanged.
+
+Start Redis:
+
+```console
+docker compose up -d
+```
+
+In a second terminal, start a Celery worker:
+
+```console
+uv run celery -A pyconlab.celery_app worker --loglevel=INFO --concurrency=4
+```
+
+In a third terminal, start the separate Celery-backed API:
+
+```console
+uv run celery_server
+```
+
+The API listens on `http://localhost:8126`. Submit and inspect a job with:
+
+```console
+curl -s -X POST "http://localhost:8126/jobs?job_count=8&size=128&seed=100"
+curl -s "http://localhost:8126/jobs/<job_id>"
+```
+
+The dedicated smoke test checks the API, `202` submission, Celery task
+progress (`STARTED` to `SUCCESS`), checksum correctness, and `422` input
+validation:
+
+```console
+./scripts/test_celery.sh
+```
+
+Phase 6 manually owns the queue and executor lifecycle. Phase 7 delegates
+those concerns to Redis and Celery while keeping the CPU workload identical.
+
 Inspect the active interpreter directly:
 
 ```console
@@ -221,6 +264,7 @@ uv run runtime_status
 
 ## Testing the Lab
 
-For a complete end-to-end validation of all six phases, including
+For a complete end-to-end validation of all seven phases, including
 standard CPython, free-threaded CPython, subinterpreters, profiling,
-backpressure, timeouts, and graceful shutdown, see [TESTING.md](TESTING.md).
+backpressure, timeouts, graceful shutdown, and Celery/Redis, see
+[TESTING.md](TESTING.md).

@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.14"
 dependencies = [
+    "celery[redis]>=5.6.0",
     "fastapi>=0.141.1",
     "pydantic>=2.13.5",
     "uvicorn>=0.52.4",
@@ -23,6 +24,7 @@ interpreter_boundary = "pyconlab.interpreter_boundary:main"
 profiling = "pyconlab.profiling:main"
 
 production_server = "pyconlab.production_server:main"
+celery_server = "pyconlab.celery_server:main"
 
 
 [build-system]

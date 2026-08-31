@@ -2,7 +2,7 @@
 
 ## Goal
 
-Test the entire `python-concurrency-lab` repository and verify that all six phases behave as intended.
+Test the entire `python-concurrency-lab` repository and verify that all seven phases behave as intended.
 
 Do not rely on exact timing numbers. Focus on:
 
@@ -762,7 +762,68 @@ drain complete
 
 ---
 
-# 12. Final Correctness Matrix
+# 12. Phase 7 — Celery and Redis
+
+Start Redis in Docker:
+
+```bash
+docker compose up -d
+```
+
+In a second terminal, start the Celery worker:
+
+```bash
+uv run celery \
+  -A pyconlab.celery_app \
+  worker \
+  --loglevel=INFO \
+  --concurrency=4
+```
+
+In a third terminal, start the Celery-backed API:
+
+```bash
+uv run celery_server
+```
+
+It listens on port `8126`. Run the focused API test from another terminal:
+
+```bash
+./scripts/test_celery.sh
+```
+
+The test verifies:
+
+```text
+/ping                       HTTP 200
+job submission              HTTP 202
+task lifecycle              STARTED → SUCCESS
+checksum                    matches execute_batch()
+invalid input               HTTP 422
+```
+
+The API test assumes Redis, the Celery worker, and `celery_server` are already
+running. Stop the worker and API when finished. Redis can be stopped with:
+
+```bash
+docker compose down
+```
+
+Verified locally: the worker registered `pyconlab.multiply`; the API returned
+`202`, the task progressed through `STARTED` to `SUCCESS`, and the result
+checksum was `1808144973440`. Invalid `job_count=0` returned `422`.
+
+This phase compares the Phase 6 in-process queue with Celery’s externalized
+queue and result state:
+
+```text
+Phase 6: FastAPI → asyncio.Queue → executor → execute_batch()
+Phase 7: FastAPI → Redis → Celery worker → execute_batch()
+```
+
+---
+
+# 13. Final Correctness Matrix
 
 Produce a final report like:
 
@@ -805,11 +866,18 @@ bounded queue               PASS / FAIL
 503 backpressure            PASS / FAIL
 service responsiveness      PASS / FAIL
 graceful drain              PASS / FAIL
+
+Phase 7
+Redis service               PASS / FAIL
+Celery worker registration  PASS / FAIL
+normal task lifecycle       PASS / FAIL
+checksum correctness        PASS / FAIL
+input validation            PASS / FAIL
 ```
 
 ---
 
-# 13. Important Testing Rules
+# 14. Important Testing Rules
 
 Do not fail tests because exact runtime numbers differ.
 

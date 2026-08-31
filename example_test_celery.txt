@@ -1,0 +1,45 @@
+== Ping ==
+{
+  "pong": true
+}
+
+== Submit job ==
+{
+  "job_id": "53bb5681-3b6c-4845-ae2b-4869b9271266",
+  "status": "queued"
+}
+job_id=53bb5681-3b6c-4845-ae2b-4869b9271266
+
+== Poll job ==
+status=STARTED
+status=STARTED
+status=SUCCESS
+{
+  "job_id": "53bb5681-3b6c-4845-ae2b-4869b9271266",
+  "status": "SUCCESS",
+  "result": {
+    "jobs": 8,
+    "checksum_total": 1808144973440,
+    "checksum_min": 226018121680,
+    "checksum_max": 226018121680
+  }
+}
+
+== Validation ==
+{
+  "detail": [
+    {
+      "type": "greater_than_equal",
+      "loc": [
+        "query",
+        "job_count"
+      ],
+      "msg": "Input should be greater than or equal to 1",
+      "input": "0",
+      "ctx": {
+        "ge": 1
+      }
+    }
+  ]
+}
+PASS: Celery API checks
