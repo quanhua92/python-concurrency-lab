@@ -245,13 +245,27 @@ curl -s -X POST "http://localhost:8126/jobs?job_count=8&size=128&seed=100"
 curl -s "http://localhost:8126/jobs/<job_id>"
 ```
 
-The dedicated smoke test checks the API, `202` submission, Celery task
-progress (`STARTED` to `SUCCESS`), checksum correctness, and `422` input
-validation:
+The API test checks the normal lifecycle and the easy/medium failure cases:
+normal success, checksum correctness, a crashing task that leaves the API
+healthy, retry-then-success, a hard time limit, and `422` input validation:
 
 ```console
 ./scripts/test_celery.sh
 ```
+
+Run the worker lifecycle checks separately. This script deliberately queues a
+task before starting a worker, proving that Redis retains the task, then sends
+`TERM` while a task is running and verifies Celery's warm shutdown:
+
+```console
+./scripts/test_celery_resilience.sh
+```
+
+The resilience test assumes Redis is running, but starts and stops its own
+temporary Celery worker. Both scripts use the same `execute_batch()` workload
+as Phase 6. Celery's Redis broker is not configured as a bounded `asyncio.Queue`,
+so HTTP `503` backpressure and custom `active_cpu`/`queue_depth` metrics remain
+Phase 6 topics rather than being duplicated here.
 
 Phase 6 manually owns the queue and executor lifecycle. Phase 7 delegates
 those concerns to Redis and Celery while keeping the CPU workload identical.

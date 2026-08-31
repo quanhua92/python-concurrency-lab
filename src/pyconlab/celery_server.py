@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import argparse
-from typing import Annotated
+from typing import Annotated, Literal
 
 from celery.result import AsyncResult
 from fastapi import FastAPI, Query
@@ -23,17 +23,25 @@ async def submit_job(
     job_count: Annotated[int, Query(ge=1, le=64)] = 8,
     size: Annotated[int, Query(ge=1, le=256)] = 128,
     seed: int = 100,
+    fault: Literal["none", "crash", "hang"] = "none",
+    hang_seconds: Annotated[float, Query(ge=0.1, le=30)] = 5.0,
+    retry_count: Annotated[int, Query(ge=0, le=3)] = 0,
+    time_limit: Annotated[float | None, Query(ge=0.1, le=30)] = None,
 ) -> dict[str, str]:
     # Celery replaces the function with a task proxy at runtime; its typing
-    # stubs do not expose the proxy's delay() method.
-    task = multiply_task.delay(  # pyright: ignore[reportFunctionMemberAccess]
-        job_count,
-        size,
-        seed,
+    # stubs do not expose the proxy's apply_async() method.
+    task = multiply_task.apply_async(  # pyright: ignore[reportFunctionMemberAccess]
+        args=(job_count, size, seed),
+        kwargs={
+            "fault": fault,
+            "hang_seconds": hang_seconds,
+            "retry_count": retry_count,
+        },
+        time_limit=time_limit,
     )
 
     return {
-        "job_id": task.id,
+        "job_id": str(task.id),
         "status": "queued",
     }
 

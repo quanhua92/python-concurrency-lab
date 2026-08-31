@@ -1,0 +1,13 @@
+== Queue task before worker starts ==
+job_id=b7d3a758-b13a-4911-8107-d403d9b58859
+
+== Start worker ==
+worker_ready=true
+
+== Recover queued task ==
+status=SUCCESS
+PASS: queued task survived worker absence
+
+== Warm shutdown ==
+worker_exit=0 task_status=SUCCESS
+PASS: warm shutdown completed the running task

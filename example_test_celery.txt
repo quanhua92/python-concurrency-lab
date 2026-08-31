@@ -5,17 +5,16 @@
 
 == Submit job ==
 {
-  "job_id": "53bb5681-3b6c-4845-ae2b-4869b9271266",
+  "job_id": "8d009a28-6a93-4f71-8b52-ee560b88578f",
   "status": "queued"
 }
-job_id=53bb5681-3b6c-4845-ae2b-4869b9271266
+job_id=8d009a28-6a93-4f71-8b52-ee560b88578f
 
 == Poll job ==
 status=STARTED
-status=STARTED
 status=SUCCESS
 {
-  "job_id": "53bb5681-3b6c-4845-ae2b-4869b9271266",
+  "job_id": "8d009a28-6a93-4f71-8b52-ee560b88578f",
   "status": "SUCCESS",
   "result": {
     "jobs": 8,
@@ -23,6 +22,33 @@ status=SUCCESS
     "checksum_min": 226018121680,
     "checksum_max": 226018121680
   }
+}
+
+== Failure isolation ==
+{
+  "job_id": "b97968d2-b144-474f-98db-6727d0486edb",
+  "status": "FAILURE",
+  "result": null,
+  "error": "intentional worker crash"
+}
+
+== Retry then success ==
+status=RETRY
+status=STARTED
+status=STARTED
+status=SUCCESS
+
+== Time limit ==
+{
+  "job_id": "054ba332-e3ed-452b-9d4f-8eba5c87846c",
+  "status": "FAILURE",
+  "result": null,
+  "error": "TimeLimitExceeded(1.0,)"
+}
+
+== Service after task failures ==
+{
+  "pong": true
 }
 
 == Validation ==

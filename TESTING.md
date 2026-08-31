@@ -799,6 +799,9 @@ The test verifies:
 job submission              HTTP 202
 task lifecycle              STARTED → SUCCESS
 checksum                    matches execute_batch()
+crashing task               FAILURE; API remains healthy
+retry_count=1                RETRY → SUCCESS
+time_limit=1                FAILURE without worker loss
 invalid input               HTTP 422
 ```
 
@@ -810,8 +813,32 @@ docker compose down
 ```
 
 Verified locally: the worker registered `pyconlab.multiply`; the API returned
-`202`, the task progressed through `STARTED` to `SUCCESS`, and the result
-checksum was `1808144973440`. Invalid `job_count=0` returned `422`.
+`202`, the normal task progressed through `STARTED` to `SUCCESS`, and the
+result checksum was `1808144973440`. A crash returned `FAILURE` with
+`intentional worker crash`, retry returned `SUCCESS`, the one-second time
+limit returned `FAILURE` with `TimeLimitExceeded`, and invalid `job_count=0`
+returned `422`. `/ping` remained healthy after task failures.
+
+Run the Redis persistence and worker shutdown checks after the API test:
+
+```bash
+./scripts/test_celery_resilience.sh
+```
+
+This script queues a normal task before a worker exists, starts a temporary
+worker, and verifies that the queued task is later consumed with the expected
+checksum. It then runs a two-second task, sends `SIGTERM` to the worker, and
+verifies a clean worker exit after the running task completes:
+
+```text
+PASS: queued task survived worker absence
+worker_exit=0 task_status=SUCCESS
+PASS: warm shutdown completed the running task
+```
+
+The Phase 7 test scope intentionally stops at these easy and medium cases.
+Celery's Redis broker is not a bounded application queue, so HTTP `503`
+backpressure and Phase 6-style custom CPU/queue metrics are not asserted here.
 
 This phase compares the Phase 6 in-process queue with Celery’s externalized
 queue and result state:
@@ -872,6 +899,11 @@ Redis service               PASS / FAIL
 Celery worker registration  PASS / FAIL
 normal task lifecycle       PASS / FAIL
 checksum correctness        PASS / FAIL
+failure isolation           PASS / FAIL
+retry behavior              PASS / FAIL
+time-limit behavior         PASS / FAIL
+queued-task recovery        PASS / FAIL
+graceful worker shutdown    PASS / FAIL
 input validation            PASS / FAIL
 ```
 
@@ -959,4 +991,9 @@ Phase 6
 bounded queues, backpressure, failure handling,
 timeouts, observability, and graceful draining
 turn the execution model into a production-style service
+
+Phase 7
+Redis externalizes task and result state
+Celery supplies worker scheduling, retries, time limits,
+failure isolation, queued-task recovery, and warm shutdown
 ```
