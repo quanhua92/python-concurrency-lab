@@ -11,7 +11,6 @@ rm -f "$LOG_FILE"
 echo "== Start server =="
 
 uv run \
-  --python /opt/homebrew/bin/python3.14 \
   production_server \
   --executor interpreters \
   --workers 2 \

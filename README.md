@@ -14,7 +14,7 @@ Requirements:
 Run the default single-mode benchmark with the standard Python 3.14 build:
 
 ```console
-uv run --python 3.14 pyconlab
+uv run pyconlab
 ```
 
 Run it with the Homebrew free-threaded build to compare behavior:
@@ -79,7 +79,7 @@ The `interpreters` mode uses `InterpreterPoolExecutor` to run the existing
 `run_jobs()` matmul code in separate interpreter workers within one OS process:
 
 ```console
-uv run --python 3.14 pyconlab --mode interpreters --workers 4
+uv run pyconlab --mode interpreters --workers 4
 uv run --python /opt/homebrew/bin/python3.14t pyconlab --mode interpreters --workers 4
 ```
 
@@ -87,11 +87,13 @@ The boundary demo compares sending a tiny summary with sending the full result
 matrix across an interpreter boundary:
 
 ```console
-uv run --python 3.14 interpreter_boundary
+uv run interpreter_boundary
 uv run --python /opt/homebrew/bin/python3.14t interpreter_boundary
 ```
 
-Observed results for a 128x128 matrix and 20 crossings:
+Example results for a 128x128 matrix and 20 crossings are below. Timings vary
+by machine and run; the important result is that full-result transfer costs
+more than summary transfer for a sufficiently large payload.
 
 | Python build | Summary crossing | Full-matrix crossing | Full/summary |
 | --- | ---: | ---: | ---: |
@@ -216,3 +218,9 @@ Inspect the active interpreter directly:
 ```console
 uv run runtime_status
 ```
+
+## Testing the Lab
+
+For a complete end-to-end validation of all six phases, including
+standard CPython, free-threaded CPython, subinterpreters, profiling,
+backpressure, timeouts, and graceful shutdown, see [TESTING.md](TESTING.md).
